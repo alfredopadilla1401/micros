@@ -1,0 +1,62 @@
+ */
+
+
+#include <xc.h>
+#include "Config.h"
+#include <stdio.h>
+#define _XTAL_FREQ 32000000
+#include "flex_lcd.h"
+
+
+void main(void){
+    
+    unsigned char i;
+    unsigned char buffer1[16];       //Cadena de caracteres 
+    OSCFRQbits.HFFRQ = 0b110;       //32MHz
+    //Puertos*****
+    ANSELD=0;                       //Pueto D como digital
+    ANSELE=0;                       //Pueto E como digital
+    
+    
+    //Inicializacion Lcd
+    
+    Lcd_Init();                     //Inicializar Lcd
+    Lcd_Cmd(LCD_CLEAR);             //Limpia la Lcd
+    Lcd_Cmd(LCD_CURSOR_OFF);
+    Lcd_Cmd(LCD_BLINK_CURSOR_ON );  //Parpadear el cursor
+    __delay_ms(1000);               //retardo 1000ms
+     Lcd_Cmd(LCD_CURSOR_OFF);
+    
+        
+        int d=2;
+        int e=1;
+        
+        
+         for(i=0; i<13; i++){
+             
+              d=d+1;
+              e=e+1;
+              
+             Lcd_Out(1, e, " ");
+             Lcd_Out(1, d, "Mecatronica");
+              
+        sprintf(buffer1, "Contador = %03d",i);
+         Lcd_Out2(2,1, buffer1);
+         __delay_ms(500);
+         }
+    
+        
+    //ciclo infinito
+        while(1){
+          for(i=0; i<13; i++){
+              
+          Lcd_Out(1,1, "                ");
+           sprintf(buffer1, "Contador = %03d" ,i);
+          Lcd_Out2(2,1, buffer1);
+          __delay_ms(500);
+    
+            }  
+          
+  }
+    return;
+}
