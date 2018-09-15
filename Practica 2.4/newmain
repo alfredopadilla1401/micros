@@ -1,0 +1,87 @@
+/*
+ * File:   newmain.c
+ * Author: jaime
+ *
+ * Created on 6 de septiembre de 2018, 06:10 PM
+ */
+
+
+#include <xc.h>
+#include "Config.h"
+#define _XTAL_FREQ 32000000
+#include "flex_lcd.h"
+#include <stdio.h>
+
+
+void main(void){
+    
+     int adc = 0;
+     int adc1=0;
+     float  vt1,temp,vt2;
+     unsigned char buffer1[16];
+     
+    
+    //OSCILADOR
+    OSCFRQbits.HFFRQ = 0b110;
+    
+    //PUERTOS
+    
+    ANSELD=0;//PUERTO D COMO DIGITAL
+    ANSELE=0;// PUERTO E COMO DIGITAL
+    
+    ANSELAbits.ANSA5 = 1;//RA5 COMO ANALOGICO 
+    TRISAbits.TRISA5 = 1;//A5  POTENCIOMETRO
+    ANSELAbits.ANSA3 = 1;//RA3 COMO ANALOGICO
+    TRISAbits.TRISA3 = 1;//A3 LM35
+     
+    
+    //Convertidor Analogico-Digital
+    
+    ADCON0bits.ADON=1;
+    ADCON0bits.ADCS=1;
+    ADREFbits.ADNREF=0;
+    ADREFbits.ADPREF=0b00;
+    ADCON0bits.ADFRM=1;
+   __delay_ms(200);
+    
+   
+    
+    //Init LCD
+    Lcd_Init();
+    Lcd_Cmd(LCD_CLEAR);
+    Lcd_Cmd(LCD_CURSOR_OFF);
+    __delay_ms(100);
+    
+    //ciclo infinito
+    while(1){
+        
+        ADPCH=0b000101;
+      __delay_ms(50);
+      ADCON0bits.GO_nDONE=1;//Inicia la converción
+      while(ADCON0bits.GO_nDONE);
+      adc1 = ADRESH;
+      adc1 = adc1<<8;
+      adc1 = adc1+ADRESL;
+      vt1=(5.0*adc1)/1023.0;//voltaje
+      sprintf(buffer1, " volt = %02.2f " , vt1);
+      Lcd_Out2(1,1, buffer1);
+      __delay_ms(300);
+      
+      ADPCH=0b000011;
+      __delay_ms(50);
+      ADCON0bits.GO_nDONE=1;//Inicia la converción
+      while(ADCON0bits.GO_nDONE);
+      adc = ADRESH;
+      adc = adc<<8;
+      adc = adc+ADRESL;
+      vt2= 5.0*adc/1023.0;
+      
+      temp = (vt2*100.0);//temperatura
+      sprintf(buffer1, " temp = %02.2f " , temp );
+      Lcd_Out2(2,1,buffer1);
+      __delay_ms(300);
+      
+        
+   } 
+    return;
+}
