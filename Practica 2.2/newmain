@@ -1,0 +1,42 @@
+/*
+ * File:   newmain.c
+ * Author: jaime
+ *
+ * Created on 4 de septiembre de 2018, 10:48 AM
+ */
+
+
+#include <xc.h>
+#include "Config.h"
+# define _XTAL_FREQ 32000000
+
+
+void main(void) {
+       // Oscilador 32MHz OSC=HFINTOSC DIV 1:1
+     OSCFRQbits.HFFRQ=0b110; // 32 MHz HF1NTOSC
+   
+    //Configuración del puertos
+    PORTB=0;//PORTB
+    ANSELB=0;// TODO PURTO COMO DIGITAL
+    TRISB= 0b11110000;
+  
+    //CICLO INFINITO
+      WPUBbits.WPUB4 = 1;
+      WPUBbits.WPUB6 = 1;
+    while(1){ 
+         if(RB4 == 0){
+         __delay_ms (110);
+         LATBbits.LATB1 = LATBbits.LATB1 ++;
+        
+     }
+     
+     if(RB6 == 0){
+         __delay_ms (110);
+         LATBbits.LATB2 = LATBbits.LATB2 ++;
+         
+     }  
+     
+    }    
+    return;
+
+    }
