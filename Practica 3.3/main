@@ -1,0 +1,176 @@
+#include <xc.h>
+#include "config.h"
+#define _XTAL_FREQ 32000000
+//int cont;
+
+void main(void) {
+    OSCFRQ = 0b110;
+    //Tierras
+    PORTC =0;
+    ANSELC = 0;
+    TRISC = 0;
+    //PUERTOS 
+    PORTB = 0;
+    ANSELB = 0;
+    TRISB = 0;
+    
+    //pueros
+    PORTA = 0;
+    ANSELA=0;//PUERTO B COMO DIGITAL
+    TRISA= 255;//PUERTO B COMO SALIDA
+    //PPS
+   // RB0PPS=0*18;//RB0<----TO--OUT
+    T0CKIPPS = 0x06;// puerto selleccionado para asignar la entradad  que necesitamos 
+    T0CON0bits.T016BIT = 0; //REGISTRO DE 8 BITS TIMER//
+    T0CON0bits.T0OUTPS = 0b0000;//POS1:1
+    T0CON1bits.T0CS = 0b001; //CS=FOSC/4
+    T0CON1bits.T0ASYNC= 1;//NO SINCRONIZADA
+    T0CON1bits.T0CKPS= 0b0000; //pre 1111111:4096
+    TMR0H = 100; //PRECARGA PARA 100S NOTA:CALCULARLA NO SE DE DONDE SALE 
+    TMR0L = 0; // SE INICIA EN SERE EL CONTEO
+    T0CON0bits.T0EN = 1; //habilita timer0
+    //inte0rripciones
+   // PIR0bits.TMR0IF = 0;//LIMPIA VANDERA INT
+    //PIE0bits.TMR0IE = 1;
+    //INTCONbits.GIE=1;
+    //CICLO INFINITO
+           // int a;
+
+    unsigned char numero[] =  {0b11111100,
+                               0b00001100,
+                               0b11011010,
+                               0b11110010,
+                               0b01100110,
+                               0b10110110,
+                               0b10111110,
+                               0b11100000,
+                               0b11111110,
+                               0b11100110};
+    while (1){ 
+        if(TMR0L <= 10){
+        LATC = 0b00000110; 
+        LATB = numero[TMR0L];
+        __delay_us(200);
+        }
+           if (TMR0L >= 10 && TMR0L < 20 ){
+        LATC = 0b00000110; 
+        LATB = numero[TMR0L-10];
+           __delay_us(200);
+           
+    <
+        LATC = 0b00000101;
+        LATB = numero [1];
+                
+
+         __delay_us(200);
+        
+           }
+           if(TMR0L >= 20  && TMR0L < 30 ){
+        LATC = 0b00000110;
+        LATB = numero[TMR0L-20];
+           __delay_us(200);
+          
+      LATC = 0b00000101;
+        LATB = numero [2];
+        
+       __delay_us(200);
+           }
+        if(TMR0L >= 30  && TMR0L < 40 ){
+        LATC = 0b00000110;
+        LATB = numero[TMR0L-30];
+           __delay_us(200);
+          
+     LATC = 0b00000101;
+        LATB = numero [3];
+        
+        
+        __delay_us(200);
+           }
+             if(TMR0L >= 40  && TMR0L < 50 ){
+        LATC = 0b00000110;
+        LATB = numero[TMR0L-40];
+           __delay_us(200);
+          
+     LATC = 0b00000101;
+        LATB = numero [4];
+        
+        
+        __delay_us(200);
+           }
+             if(TMR0L >= 50  && TMR0L < 60 ){
+        LATC = 0b00000110;
+        LATB = numero[TMR0L-50];
+           __delay_us(200);
+          
+     LATC = 0b00000101;
+        LATB = numero [5];
+         
+        
+        __delay_us(200);
+           }
+             if(TMR0L >= 60  && TMR0L < 70 ){
+        LATC = 0b00000110;
+        LATB = numero[TMR0L-60];
+           __delay_us(200);
+          
+     LATC = 0b00000101;
+        LATB = numero [6];
+        
+        
+        __delay_us(200);
+           }
+             if(TMR0L >= 70  && TMR0L < 80 ){
+        LATC = 0b00000110;
+        LATB = numero[TMR0L-70];
+           __delay_us(200);
+          
+     LATC = 0b00000101;
+        LATB = numero [7];
+        
+        
+        __delay_us(200);
+           }
+             if(TMR0L >= 80  && TMR0L < 90 ){
+        LATC = 0b00000110;
+        LATB = numero[TMR0L-80];
+           __delay_us(200);
+          
+     LATC = 0b00000101;
+        LATB = numero [8];
+        
+        
+        __delay_us(200);
+           }
+             if(TMR0L >= 90  && TMR0L < 100 ){
+        LATC = 0b00000110;
+        LATB = numero[TMR0L-90];
+           __delay_us(200);
+          
+     LATC = 0b00000101;
+        LATB = numero [9];
+        
+        
+        __delay_us(200);
+           }
+     if(TMR0L >= 100 ){
+       
+     LATC = 0b00000011;
+        LATB = numero [1];
+        
+        
+        __delay_us(200);
+        
+        
+          LATC = 0b00000101;
+        LATB = numero [0];
+        __delay_us(200);
+        
+          LATC = 0b00000110;
+        LATB = numero [0];
+        __delay_us(200);
+           }
+        }    
+     
+    
+    return;
+}
