@@ -1,0 +1,283 @@
+#include <xc.h>
+#include "Config.h"
+#include<stdio.h>
+#define _XTAL_FREQ 32000000
+#include "flex_lcd.h"
+
+ //Variables
+int colum;
+int numero;
+int signo;
+int y1, y2, y3, num, num2, operacion;
+int cuenta=0;
+int resultadofinal;
+int tec;
+int x;
+int borrar=1;
+unsigned char buffer1[16];
+    unsigned char columna1[]={0b00001000,
+                              0b00000100,
+                              0b00000010,
+                              0b00000001};
+    
+    
+   
+void main (void) {
+    
+    //Oscilador
+    OSCFRQbits.HFFRQ = 0b110; //32MHz
+   
+    //Puertos 
+    
+   
+    PORTB=0;          //Limpia puertos A
+    PORTA=0;          //Limpia puertos B
+    ANSELB=0;         //Todo digital 
+    ANSELA=0;         //Todo digital
+    TRISB=0b00001111; //Entradas para las flag
+    TRISA=0b00000000; //Salidas para los barrimientos
+    
+    ANSELD=0; 
+    ANSELE=0;
+   
+    //IOC
+    IOCBPbits.IOCBP0=1; //RB0 flanco de subida
+    IOCBFbits.IOCBF0=0; //FLAG DE B0
+    
+    IOCBPbits.IOCBP1=1; //RB1 flanco de subida
+    IOCBFbits.IOCBF1=0; //FLAG DE B1
+    
+    IOCBPbits.IOCBP2=1; //RB2 flanco de subida
+    IOCBFbits.IOCBF2=0; //FLAG DE B2
+    
+    IOCBPbits.IOCBP3=1; //RB3 flanco de subida
+    IOCBFbits.IOCBF3=0; //FLAG DE B3
+    
+    PIR0bits.IOCIF=0;   //FLAG GENERAL
+    PIE0bits.IOCIE=1;   //ENABLE IOC 
+    INTCONbits.GIE=1;//Global interrup enable
+    
+    //variables
+    int a;
+    
+     //Ciclo 
+    
+    Lcd_Init();            
+    Lcd_Cmd(LCD_CLEAR);
+    Lcd_Cmd(LCD_CURSOR_OFF);
+    
+    
+    while(borrar){
+        
+        for(a = 0; a < 4; a++)
+        {
+            colum=a;
+            LATA=columna1[a];
+           __delay_ms(10);
+        }
+      //escribimos en la lcd 
+        
+       if (tec ==1){ 
+       sprintf(buffer1,"%03d",num);
+       Lcd_Out2(1,3,buffer1);
+       
+       sprintf(buffer1,"%03d",resultadofinal);
+       Lcd_Out2(2,3,buffer1);
+       tec=0;
+       }
+       
+    }
+   
+      return;
+}
+  
+
+
+   void __interrupt() calc (){
+       tec=1;
+       
+       
+              //COLUMNA 0
+   
+    
+     if((IOCBFbits.IOCBF0==1)&&(colum==0))//numero 0
+     {   
+           numero=0;
+         __delay_ms(500);
+     }
+    
+     if((IOCBFbits.IOCBF1==1)&&(colum==0))//Signo para sumar
+     {
+         signo=1;
+          __delay_ms(500);
+     }
+       
+     if((IOCBFbits.IOCBF2==1)&&(colum==0))//signo para restar
+     {
+         signo=2; 
+          __delay_ms(500);
+     }
+   
+     if((IOCBFbits.IOCBF3==1)&&(colum==0))//signo para multiplicar
+     { 
+         signo=4;
+             __delay_ms(500);
+     }
+       
+       
+              //COLUMNA 1
+      if((IOCBFbits.IOCBF0==1)&&(colum==1))//Numero 7
+      {
+        numero=7;  
+        __delay_ms(500);
+      }
+     if((IOCBFbits.IOCBF1==1)&&(colum==1))//Numero 8
+     {
+          numero=8;
+          __delay_ms(500);//Espera 500ms
+     }
+     if((IOCBFbits.IOCBF2==1)&&(colum==1))//numero 9
+     {
+           numero=9;
+          __delay_ms(500);//Espera 500ms
+     }
+     if((IOCBFbits.IOCBF3==1)&&(colum==1))//signo para igualar(=)
+     {
+         signo= 3; 
+          __delay_ms(500);//Espera 500ms
+     }
+       
+       
+    
+                   //COLUMNA 2
+      if((IOCBFbits.IOCBF0==1)&&(colum==2))//numero 4
+     {
+          numero=4;
+          __delay_ms(500);//Espera 500ms
+     }
+     if((IOCBFbits.IOCBF1==1)&&(colum==2))//numero 5
+     {
+          numero=5;
+          __delay_ms(500);//Espera 500ms        
+     }
+     if((IOCBFbits.IOCBF2==1)&&(colum==2))//numero 6
+     {
+         numero=6;
+         __delay_ms(500);//Espera 500ms
+     }
+     if((IOCBFbits.IOCBF3==1)&&(colum==2))//limpia todo
+     {
+         borrar=0;
+         __delay_ms(500);//Espera 500ms
+     }
+       
+       
+     
+                   // COLUMNA 3
+      if((IOCBFbits.IOCBF0==1)&&(colum==3))//numero 1
+     {
+         numero=1;
+          __delay_ms(500);//Espera 500ms
+     }
+     if((IOCBFbits.IOCBF1==1)&&(colum==3))//numero 2
+     {
+          numero=2;
+          __delay_ms(500);//Espera 500ms
+     }
+    if((IOCBFbits.IOCBF2==1)&&(colum==3))//numero 3
+     {
+         numero=3;
+         __delay_ms(500);//Espera 500ms  
+     }
+
+    
+    
+    
+    
+    
+    IOCBF=0;//Limpia bandera general
+    PIR0bits.IOCIF=0;
+   
+    
+      if(signo == 1)/////////////////////////para la suma
+    {
+        num2 = num;  
+        num=0;
+        operacion=1;
+        Lcd_Cmd(LCD_CLEAR);
+        cuenta = -1;
+        signo=0;
+    }
+    
+      if(signo == 3)
+     {
+       if(operacion==1)
+       {
+       resultadofinal= num + num2;
+       Lcd_Cmd(LCD_CLEAR);
+       cuenta = 3; 
+       }    
+       
+     }
+    
+       if(signo == 2)/////////////////////////////////////////////////////paea restar
+    {
+        num2 = num;  
+        num=0;
+        operacion=2;
+        Lcd_Cmd(LCD_CLEAR);
+        cuenta = -1;
+        signo=0;
+    }
+    
+      if(signo == 3)
+     {
+       if(operacion==2)
+       {
+       resultadofinal= num2 - num;
+       Lcd_Cmd(LCD_CLEAR);
+       cuenta = 3; 
+       }    
+       
+     }
+    
+        if(signo == 4)/////////////////////////////////////////////////////para multiplicar
+    {
+        num2 = num;  
+        num=0;
+        operacion=3;
+        Lcd_Cmd(LCD_CLEAR);
+        cuenta = -1;
+        signo=0;
+    }
+    
+      if(signo == 3)
+     {
+       if(operacion==3)
+       {
+       resultadofinal= num2 * num;
+       Lcd_Cmd(LCD_CLEAR);
+       cuenta = 3; 
+       }    
+       
+     }
+
+    //////////////para las unidades
+    
+    if(cuenta==0)
+    {
+     num=numero;
+     y1=num;
+     }    
+    if(cuenta==1)
+    {
+      num = y1*10 + numero;//para las decenas
+      y2=numero;
+     }
+    if(cuenta==2) 
+     {
+        num = y1*100 + y2*10 +numero;//para   la centenas 
+     }
+
+       cuenta++;
+  }
