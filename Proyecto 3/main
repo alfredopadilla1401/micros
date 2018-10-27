@@ -1,0 +1,80 @@
+/*
+ * File:   newmain.c
+ * Author: Pacho
+ *
+ * Created on 13 de octubre de 2018, 05:03 PM
+ */
+#include <xc.h>
+#include "config.h"
+#define _XTAL_FREQ 32000000
+//int cont;
+
+
+
+void main(void) {
+    int x;
+    OSCFRQ = 0b110;
+    //Tierras
+    PORTD =0;
+    ANSELD = 0;
+    TRISD = 255;
+    //PUERTOS 
+    PORTC = 0;
+    ANSELC = 0;
+    TRISC = 0;
+    ///////////////////////PWM
+     //puertos
+    PORTB=0;
+    ANSELB=0;
+    TRISB=255;//PUERO B COMO ENTRADAS
+    //PPS
+    RB0PPS=0x09;//CCP1--->RB0
+    //TIMER2
+    PR2=255;//senal pwm de 7.81KHz
+    T2CLKCON=0b0001;//CS FOSC/4
+    T2CONbits.CKPS=0b010; //prescaler de 1:4
+    T2CONbits.OUTPS=0;//postescaler 1:1
+    T2CONbits.ON=1;//Encuebde timer 2
+    //ccp1
+    CCP1CONbits.EN=1;//Habilita CCP1
+    CCP1CONbits.FMT=0;///justificado derecha
+    CCP1CONbits.MODE=0b1111;//modo pwm
+    CCPTMRS0bits.C1TSEL=0b01;//timer2-->ccp1
+    TRISB=0;//PUERTO B COMO SALIDA
+
+    
+      
+    while(1){
+        
+        x=850;
+         CCPR1 = x;///va aumentando el ciclo de trabajo  
+         
+
+        ///////////////////SEGUIDOR
+       
+        if(PORTDbits.RD6==1 && PORTDbits.RD7 == 1){
+            LATC6 = 0;
+            LATC7 = 0;
+        }
+        if(PORTDbits.RD6==0 && PORTDbits.RD7==1){
+             x = 1;
+            LATC6 = 1;
+            LATC7 = 0;
+        }
+        if(PORTDbits.RD6==1 && PORTDbits.RD7==0){
+             x = 2;
+            LATC6 = 0;
+            LATC7 = 1;
+        }
+         if(PORTDbits.RD6==0 && PORTDbits.RD7==0 && x==1){
+            LATC6 = 1;
+            LATC7 = 0;
+        }
+         if(PORTDbits.RD6==0 && PORTDbits.RD7==0 && x==2){
+            LATC6 = 0;
+            LATC7=  1;
+        }
+    }
+    
+    return;
+}
