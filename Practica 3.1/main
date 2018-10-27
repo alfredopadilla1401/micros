@@ -1,0 +1,31 @@
+#include "config.h" 
+#include <xc.h>
+#define _XTAL_FREQ 32000000
+void main(void) {
+    OSCFRQbits.HFFRQ=0b110;//32HZ
+    //puertos
+    PORTA = 0;
+    PORTB = 0;
+    ANSELA=0;
+    ANSELB = 0;
+    TRISA =0b00000001;
+    TRISB =0b00000001;
+    //Peripheral Pin Select
+            INTPPS=1;// LA SEÑAL INT ESTA CONECTADA EN RB0 VER HOJA DE DATOS 
+    WPUB0 = 1; //Resistencia
+    //Interruocion INT
+    //INTCONbits.INTEDG=1; Flanco de subida
+    INTCONbits.INTEDG=0;//Flanco de bajada
+    //Interrupcion 
+    PIR0bits.INTF=0; //Limpiar bandera
+    PIE0bits.INTE=1;//Habilita interrupcion INT
+    INTCONbits.GIE=1;//Interrupcion global activada
+    //Ciclo infinito
+    while(1);
+    return;
+}
+void __interrupt () INTERRUPCION (void){
+    LATB0 = LATB0+1;//Cambiar el estado de led RB0
+    __delay_ms(500);//Espera 500ms
+    PIR0bits.INTF=0;//Limpiua bandera
+}
