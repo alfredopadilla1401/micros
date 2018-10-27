@@ -1,0 +1,61 @@
+#include <xc.h>
+#include "configP3.4.h"
+#define _XTAL_FREQ 32000000
+int pre = 0; //precarga
+int pre1= 15536;
+int cont = 0;
+void main(void) {
+    OSCFRQbits.HFFRQ = 0b110; //MHz
+    
+    TRISB=0b00000001; //puerto B como salidas
+    TRISD=0b00000010; //puerto D como digital
+    PORTB=0;
+    PORTD=0;
+    ANSELB=0; //puerto B como digital
+    ANSELD=0; //puerto D como digital
+    WPUBbits.WPUB0 = 1; //pullup en B0
+    
+    //Configuración del Timer1
+    INTPPS = 0x08;
+    //Interrupción INT
+    INTCONbits.INTEDG = 1;//flanco de subida
+    PIR0bits.INTF = 0;//limpiar bandera
+    PIE0bits.INTE = 1;//habilitar interrupción
+    
+    //Config Timer1
+    T1CONbits.CKPS = 0b11; //valor del prescaler 8
+    T1CONbits.nT1SYNC = 1; //asincrono
+    T1CLKbits.CS = 0b00001; //fosc/4
+    T1CONbits.ON = 1; //habilitar el Timer
+    TMR1 = pre;
+    
+    PIR4bits.TMR1IF = 0; //bandera
+    PIE4bits.TMR1IE = 1; // 
+    INTCONbits.PEIE = 1; //habilitar la interrupción por perifericos
+    INTCONbits.GIE = 1; //habilitar la interrupción global
+   
+    
+    while (1);
+
+    return;
+}
+void __interrupt () INTER (void){
+    
+    LATD2 = LATD2 + 1;
+    TMR1 = pre;
+    if (PIR0bits.INTF==1){
+        cont = cont + 1;
+        __delay_ms(300);
+    }
+    if (cont == 3){
+        cont = 1;
+    }
+    if (cont == 1){
+        pre = 60536;
+    }
+    if (cont == 2){
+        pre=15536;
+    }
+    PIR0bits.INTF = 0;
+    PIR4bits.TMR1IF = 0;
+}
