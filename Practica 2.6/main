@@ -1,0 +1,140 @@
+#include <xc.h>
+#include "ConfigH.h"
+#define _XTAL_FREQ 32000000
+#include "flex_lcd.h"
+#include <stdio.h>
+
+
+void main(void) {
+    
+     int adc = 0;
+     int adc1=0;
+     int adc2=0;
+     float ref,vt1,temp,vt2,a,b,c,d,e,f,sensor;
+     unsigned char buffer1[16];
+     
+    
+    //OSCILADOR
+    OSCFRQbits.HFFRQ = 0b110;
+    
+    //PUERTOS
+    
+    ANSELD=0;//PUERTO D COMO DIGITAL
+    ANSELE=0;// PUERTO E COMO DIGITAL
+    //ANSELB=1; //Puerto B como analogico
+    
+    ANSELAbits.ANSA5 = 1; 
+    TRISAbits.TRISA5 = 1;//A5  POTENCIOMETRO
+    ANSELAbits.ANSA3 = 1;//
+    TRISAbits.TRISA3 = 1;//A3 LM35
+    ANSELBbits.ANSB1 = 0; //Analogica y salida
+    TRISBbits.TRISB1 = 0;//FOCO
+    ANSELBbits.ANSB3 = 0; 
+    TRISBbits.TRISB3 = 0;//VENTILADOR
+   
+     
+    
+    //Convertidor Analogico-Digital
+    
+    ADCON0bits.ADON=1;
+    ADCON0bits.ADCS=1;
+    ADREFbits.ADNREF=0;
+    ADREFbits.ADPREF=0b00;
+    ADCON0bits.ADFRM=1;
+  // __delay_ms(200);
+    
+   
+    
+    //Init LCD
+    Lcd_Init();
+    Lcd_Cmd(LCD_CLEAR);
+    Lcd_Cmd(LCD_CURSOR_OFF);
+    __delay_ms(100);
+    
+    //ciclo infinito
+    while(1){
+        
+        Repetir:
+        ADPCH=0b000011; //Canal A3(Sensor)
+  
+      __delay_ms(20);
+      ADCON0bits.GO_nDONE=1;//Inicia la converción
+      while(ADCON0bits.GO_nDONE);
+      adc1 = ADRESH;
+      adc1 = adc1 << 8;
+      adc1 = adc1 + ADRESL;
+      
+     vt1=(5.0*adc1)/1023.0;//voltaje
+     sensor = vt1*100.0;
+      sprintf(buffer1, "Sen= %02.2f " , sensor);
+      Lcd_Out2(1,1, buffer1);
+      __delay_ms(2);
+      Lcd_Out2(1,10," °C ");
+      __delay_ms(300);
+      
+      
+ 
+      ADPCH=0b000101; // Canal A5(Potenciometro)
+      __delay_ms(20);
+      ADCON0bits.GO_nDONE=1;//Inicia la converción
+      while(ADCON0bits.GO_nDONE);
+      adc = ADRESH;
+      adc = adc<<8;
+      adc = adc+ADRESL;
+      vt2= (5.0*adc)/1023.0;
+      
+      ref= (vt2*100.0);
+      sprintf(buffer1, "Ref= %02.2f " , ref);
+      Lcd_Out2(2,2,buffer1);
+      __delay_ms(300);     
+      
+      
+     /* ADPCH=0b001000;// Canal B0(foco)
+       __delay_ms(50);
+      ADCON0bits.GO_nDONE=1;//Inicia la converción
+      while(ADCON0bits.GO_nDONE);
+      adc2 = ADRESH;
+      adc2 = adc<<8;
+      adc2 = adc2+ADRESL;
+      vt2= 5.0*adc2/1023.0;
+      
+      ref = vt2*100.0;
+      sprintf (buffer1, "Ref = %02.2", ref);
+      Lcd_Out2(2,2,buffer1);
+      __delay_ms(300);*/
+      /////Un espacio en el ADC equivale a 0.488grados sentigrados
+     // a = (5.0*6.14740/1023.0)*100.0;
+      a = (5.0*10.2459/1023.0)*100.0;
+      
+     // c = (5.0*51.22590/1023.0)*100.0;//Para 25 grados
+      //d = c*100.0;
+      
+      //e = (5.0*163.9344/1023.0)*100.0;//Para 80 grados 
+      
+       
+      
+      //if (ref < d || ref > f){
+          //sprintf(buffer1, "FALLO");
+          //Lcd_Out2(2,1,buffer1);
+         // __delay_ms(300);
+     // }
+     //// else {
+          //sprintf(buffer1, " ");
+          //Lcd_Out2(2,1,buffer1);
+      //}
+     
+      if (sensor > (ref + a)){
+          LATBbits.LATB1 = 1; // El foco se activa 
+          LATBbits.LATB3 = 0; // El ventilador  se desactiva 
+      }
+           __delay_ms(300);
+      
+      if (sensor < (ref - a)){ // El rele se desactiva
+          
+          LATBbits.LATB1 = 0;   
+          LATBbits.LATB3 = 1; 
+      }
+      
+    }
+    return;
+}
